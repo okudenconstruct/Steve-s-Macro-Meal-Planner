@@ -11,12 +11,13 @@
     --bg:#111827;--panel:#1f2937;--panel-2:#0f172a;--ink:#ffffff;--muted:#9ca3af;
     --border:#374151;--accent:#60a5fa;--ok:#4ade80;--warn:#f59e0b;--bad:#ef4444;
     --train:#facc15;--rest:#34d399;--busy:#60a5fa;
+    --pad:12px; --gap:12px; --rowgap:8px; --font:1rem;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;overflow-x:hidden}
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
        background:var(--bg);color:var(--ink);min-height:100vh;padding:16px}
-  .container{max-width:1280px;margin:0 auto;padding-inline:8px}
+  .container{max-width:1360px;margin:0 auto;padding-inline:8px}
   .title{font-weight:800;text-align:center;margin:.25rem 0 .75rem;text-decoration:underline}
 
   /* ====== TOOLBAR ====== */
@@ -36,18 +37,22 @@
   label.small{color:var(--muted);font-size:.85rem}
 
   /* ====== GRID LAYOUT ====== */
-  .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px}
-  /* Wide screens: two meal columns + right sidebar */
+  .grid{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-top:12px}
+  /* Two meal columns on wide screens */
   @media (min-width: 1280px){
-    .grid{grid-template-columns: 1fr 1fr 340px;}
+    .meals{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
   }
-  .meals{display:grid;grid-template-columns:1fr;gap:16px}
-  @media (min-width:1280px){ .meals{grid-column:1 / span 2; grid-template-columns: 1fr 1fr;} }
+  /* Sidebar to the right only on very wide screens to avoid overflow */
+  @media (min-width: 1440px){
+    .grid{grid-template-columns: 1fr 1fr 360px;}
+    .meals{grid-column:1 / span 2}
+    .sidebar{grid-column:3}
+  }
 
   /* ====== CARDS / ROWS ====== */
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:.75rem;padding:12px;overflow:hidden}
-  .card h3{font-size:1.05rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:.5rem}
-  .rows{display:grid;gap:8px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:.75rem;padding:var(--pad);overflow:hidden}
+  .card h3{font-size:1.02rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .rows{display:grid;gap:var(--rowgap)}
   .row{display:grid;grid-template-columns:minmax(260px,1fr) auto 54px; gap:8px; align-items:center}
   .row > *{min-width:0}
   .remove{justify-self:end}
@@ -57,35 +62,31 @@
   .chip.warn{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid #b45309}
   .chip.bad{background:rgba(239,68,68,.12);color:var(--bad);border:1px solid #b91c1c}
   .add-row{margin-top:6px}
-  .fat-note{font-size:.85rem;color:var(--muted)}
-  .fat-note b{color:#fff}
+  .fat-note{display:none} /* removed footer hint to save space */
 
   /* Searchable picker + stepper */
   .picker{display:flex;gap:6px;align-items:center}
   .picker input[type="text"]{flex:1 1 auto;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.4rem;padding:.5rem;font-size:.95rem}
-  .stepper{display:flex;align-items:center;gap:6px}
-  .stepper input{width:72px;text-align:center;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.4rem;padding:.45rem}
+  .stepper{display:flex;align-items:center;gap:6px;justify-self:start}
+  .stepper input{width:68px;text-align:center;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.4rem;padding:.45rem}
   .stepper .u{color:var(--muted);font-size:.85rem}
-  .stepper .pm{width:32px;height:34px;border-radius:.4rem;border:1px solid var(--border);background:var(--panel-2);color:#fff;cursor:pointer}
+  .stepper .pm{width:30px;height:34px;border-radius:.4rem;border:1px solid var(--border);background:var(--panel-2);color:#fff;cursor:pointer}
 
   select, input[type="number"]{background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.4rem;padding:.5rem;font-size:.95rem;width:100%}
   select:focus,input:focus, .picker input[type="text"]:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
 
   /* ====== SIDEBAR ====== */
-  .sidebar{display:grid;gap:16px;height:fit-content}
-  @media (min-width:1280px){ .sidebar{grid-column:3} }
-  .panel{background:var(--panel);border:1px solid var(--border);border-radius:.75rem;padding:12px}
+  .sidebar{display:grid;gap:var(--gap);height:fit-content}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:.75rem;padding:var(--pad)}
   .totals h4{font-weight:800;margin-bottom:8px}
   .kpi{display:grid;grid-template-columns: 1fr auto; align-items:center; gap:8px; margin:8px 0}
   .kpi .num{font-weight:900}
   .bar{height:12px;background:#0b1324;border:1px solid #172554;border-radius:999px;overflow:hidden}
   .bar>span{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);width:0%}
   .remain{color:var(--muted);font-size:.85rem;text-align:right}
-
   .targets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
   .targets div{background:var(--panel-2);border:1px solid var(--border);padding:6px;border-radius:.5rem;text-align:center}
   .targets strong{display:block;font-size:1.1rem}
-
   .save-row{display:flex;gap:6px;flex-wrap:wrap}
 
   /* Toggle macros visibility */
@@ -93,6 +94,12 @@
   .macros{display:none}
   .show-row-macros .macros{display:block}
   .show-row-macros .row{grid-template-columns:minmax(220px,1fr) auto 1fr 54px}
+
+  /* ====== COMPACT MODE ====== */
+  body.compact { --pad:8px; --gap:10px; --rowgap:6px; }
+  body.compact .btn{padding:.4rem .65rem}
+  body.compact .stepper input{width:60px}
+  body.compact .row{grid-template-columns:minmax(240px,1fr) auto 50px}
 </style>
 </head>
 <body>
@@ -112,6 +119,8 @@
     <div class="group">
       <label class="small" for="toggleMacros">Row macros</label>
       <input id="toggleMacros" type="checkbox" />
+      <label class="small" for="toggleCompact">Compact</label>
+      <input id="toggleCompact" type="checkbox" />
     </div>
     <div class="group">
       <button class="btn ghost" id="importBtn" title="Paste JSON to load">Import</button>
@@ -164,11 +173,6 @@
           <button class="btn" id="clearSaveBtn">Clear Save</button>
         </div>
         <p style="color:var(--muted);font-size:.85rem;margin-top:6px">State is stored in localStorage. Export/Import or Download lets you back it up or share.</p>
-      </div>
-
-      <div class="panel">
-        <b>Heads-up</b>
-        <p style="color:var(--muted);font-size:.85rem">Each meal shows a colored badge for <b>fat per meal</b>. Green ≤ 20 g, amber 20–25 g, red &gt; 25 g.</p>
       </div>
     </aside>
   </div>
@@ -256,6 +260,7 @@ const DEFAULT_MEALS = [
 let state = {
   dayType:"training",
   showRowMacros:false,
+  compact:false,
   meals: JSON.parse(JSON.stringify(DEFAULT_MEALS))
 };
 
@@ -288,7 +293,6 @@ function buildFoodSearch(selectedKey){
     if(found){ input.value = found.name; input.dataset.key = found.k; onChange(found.k); }
   });
   input.addEventListener('blur', ()=>{
-    // if user typed a partial, try best-match by substring
     const v = input.value.trim().toLowerCase();
     const found = FOOD_DB.find(x=>x.name.toLowerCase().includes(v));
     if(found){ input.value = found.name; input.dataset.key = found.k; onChange(found.k); }
@@ -322,7 +326,9 @@ function render(){
     card.dataset.meal = m.key;
 
     const h = document.createElement('h3');
-    h.textContent = m.name;
+    const lbl = document.createElement('span'); lbl.textContent = m.name;
+    const fatBadge = document.createElement('span'); fatBadge.className='chip'; fatBadge.textContent='Fat 0 g';
+    h.appendChild(lbl); h.appendChild(fatBadge);
     card.appendChild(h);
 
     const rowsWrap = document.createElement('div');
@@ -334,18 +340,14 @@ function render(){
       if(state.showRowMacros) row.classList.add('macros-on');
       row.dataset.row=ri;
 
-      // food searchable picker
       const picker = buildFoodSearch(r.food);
       picker.addEventListener('foodchange', (ev)=>{ r.food = ev.detail; updateTotals(); saveLocal(); });
 
-      // stepper
       const step = buildStepper(r.serv ?? 1);
       step.input.addEventListener('input', ()=>{ r.serv = parseFloat(step.input.value)||0; updateTotals(); saveLocal(); });
 
-      // macros cell (optional)
       const macros = document.createElement('div'); macros.className='sub macros'; macros.textContent='—';
 
-      // delete
       const del = document.createElement('button'); del.className='btn remove'; del.title='Remove food'; del.setAttribute('aria-label','Remove food'); del.textContent='✕';
       del.addEventListener('click',()=>{ m.rows.splice(ri,1); render(); updateTotals(); saveLocal(); });
 
@@ -356,27 +358,12 @@ function render(){
       rowsWrap.appendChild(row);
     });
 
-    // Add row button
     const add = document.createElement('button');
-    add.className='btn add-row';
-    add.textContent='+ Add Food';
-    add.addEventListener('click',()=>{
-      m.rows.push({food:FOOD_DB[0].k,serv:1});
-      render(); updateTotals(); saveLocal();
-    });
-
-    // Per-meal footer (fat badge)
-    const foot = document.createElement('div');
-    foot.style.display='flex'; foot.style.justifyContent='space-between'; foot.style.alignItems='center'; foot.style.marginTop='8px';
-
-    const fatBadge = document.createElement('span'); fatBadge.className='chip'; fatBadge.textContent = 'Fat 0 g';
-    const hint = document.createElement('span'); hint.className='fat-note'; hint.innerHTML = 'Per-meal fat target ≤ <b>20 g</b>';
-
-    foot.appendChild(fatBadge); foot.appendChild(hint);
+    add.className='btn add-row'; add.textContent='+ Add Food';
+    add.addEventListener('click',()=>{ m.rows.push({food:FOOD_DB[0].k,serv:1}); render(); updateTotals(); saveLocal(); });
 
     card.appendChild(rowsWrap);
     card.appendChild(add);
-    card.appendChild(foot);
     mealsEl.appendChild(card);
   });
 
@@ -397,7 +384,6 @@ function sum(arr,prop){ return arr.reduce((a,b)=>a+(b[prop]||0),0); }
    Update UI numbers
    ======================= */
 function updateTotals(){
-  // Meal rows macros
   document.querySelectorAll('.card').forEach((card,mi)=>{
     const m = state.meals[mi];
     let mealP=0,mealC=0,mealF=0,mealK=0;
@@ -405,22 +391,18 @@ function updateTotals(){
     card.querySelectorAll('.row').forEach((row,ri)=>{
       const r = m.rows[ri];
       const picker = row.querySelector('input[list="foodsList"]');
-      // derive key from current input text
       const f = FOOD_DB.find(x=>x.name===picker.value) || foodByKey(r.food) || FOOD_DB[0];
       r.food = f.k;
-      const servInput = row.querySelector('.stepper input');
-      const serv = parseFloat(servInput.value)||0;
+      const serv = parseFloat(row.querySelector('.stepper input').value)||0;
       r.serv = serv;
 
       const M = macrosFor(r.food, serv);
       mealP += M.P; mealC += M.C; mealF += M.F; mealK += M.K;
 
-      // inline macro text (if toggle on)
       const mac = row.querySelector('.macros');
       mac.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
     });
 
-    // fat chip
     const chip = card.querySelector('.chip');
     chip.textContent = `Fat ${mealF.toFixed(1)} g`;
     chip.classList.remove('ok','warn','bad');
@@ -429,7 +411,6 @@ function updateTotals(){
     else chip.classList.add('bad');
   });
 
-  // Daily totals
   const totals = state.meals.flatMap(m=>m.rows).map(r=>macrosFor(r.food,r.serv));
   const P = sum(totals,'P'), C = sum(totals,'C'), F = sum(totals,'F'), K = sum(totals,'K');
 
@@ -444,14 +425,12 @@ function updateTotals(){
   bar('#barF', F/T.F*100); $('#remF').textContent = `${fmtRem(T.F-F)} left`;
   bar('#barK', K/T.K*100); $('#remK').textContent = `${fmtRem(T.K-K,'kcal')} left`;
 }
-
 function fmtRem(v, unit='g'){
   const n = Math.round(v);
   if (n === 0) return `0 ${unit}`;
   if (n < 0) return `${Math.abs(n)} ${unit} over`;
   return `${n} ${unit}`;
 }
-
 function bar(sel, pct){
   const el = document.querySelector(sel);
   const clamped = Math.max(0, Math.min(100, pct||0));
@@ -476,8 +455,7 @@ function applyDayType(){
 /* =======================
    Persistence + import/export/download
    ======================= */
-const SAVE_KEY = 'macro_planner_v2';
-
+const SAVE_KEY = 'macro_planner_v3';
 function saveLocal(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
 function loadLocal(){
   const raw = localStorage.getItem(SAVE_KEY);
@@ -485,7 +463,7 @@ function loadLocal(){
   try{
     const parsed = JSON.parse(raw);
     if(parsed?.meals && parsed?.dayType){
-      state = {...state, ...parsed}; // preserve new fields
+      state = {...state, ...parsed}; // merge to keep new flags
     }
   }catch(e){}
 }
@@ -534,9 +512,15 @@ $('#toggleMacros').addEventListener('change', e=>{
   document.body.classList.toggle('show-row-macros', state.showRowMacros);
   render(); updateTotals(); saveLocal();
 });
+$('#toggleCompact').addEventListener('change', e=>{
+  state.compact = e.target.checked;
+  document.body.classList.toggle('compact', state.compact);
+  saveLocal();
+});
 
 loadLocal();
 document.body.classList.toggle('show-row-macros', state.showRowMacros);
+document.body.classList.toggle('compact', state.compact);
 render();
 applyDayType();
 </script>
