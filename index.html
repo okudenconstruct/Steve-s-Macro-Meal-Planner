@@ -673,8 +673,6 @@ let state = {
 };
 
 // ====== HELPERS ======
-const $ = sel => document.querySelector(sel);
-
 function foodByKey(k) {
   return FOOD_DB.find(f => f.k === k);
 }
@@ -702,7 +700,7 @@ function fmtRem(v, unit = 'g') {
 }
 
 function bar(sel, pct) {
-  const el = $(sel);
+  const el = document.querySelector(sel);
   if (el) {
     const clamped = Math.max(0, Math.min(100, pct || 0));
     el.style.width = clamped + '%';
@@ -742,7 +740,9 @@ function buildFoodDropdown(selectedKey, mealIdx, rowIdx) {
 
   select.addEventListener('change', () => {
     state.meals[mealIdx].rows[rowIdx].food = select.value;
-    updateTotals();
+    updateMacroDisplay(mealIdx, rowIdx);
+    updateMealTotals(mealIdx);
+    updateDailyTotals();
     saveLocal();
   });
 
@@ -775,9 +775,11 @@ function buildStepper(servVal, mealIdx, rowIdx) {
   unit.textContent = 'serv';
 
   const updateServing = (newVal) => {
-    inp.value = newVal.toFixed(2).replace(/\.00$/, '');
+    inp.value = newVal.toFixed(2).replace(/\.00$/, '').replace(/\.25$/, '.25').replace(/\.50$/, '.5').replace(/\.75$/, '.75');
     state.meals[mealIdx].rows[rowIdx].serv = parseFloat(inp.value) || 0;
-    updateTotals();
+    updateMacroDisplay(mealIdx, rowIdx);
+    updateMealTotals(mealIdx);
+    updateDailyTotals();
     saveLocal();
   };
 
@@ -793,7 +795,9 @@ function buildStepper(servVal, mealIdx, rowIdx) {
 
   inp.addEventListener('input', () => {
     state.meals[mealIdx].rows[rowIdx].serv = parseFloat(inp.value) || 0;
-    updateTotals();
+    updateMacroDisplay(mealIdx, rowIdx);
+    updateMealTotals(mealIdx);
+    updateDailyTotals();
     saveLocal();
   });
 
@@ -805,13 +809,14 @@ function buildStepper(servVal, mealIdx, rowIdx) {
 }
 
 function render() {
-  const mealsEl = $('#meals');
+  const mealsEl = document.getElementById('meals');
   mealsEl.innerHTML = '';
 
   state.meals.forEach((m, mi) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.meal = m.key;
+    card.dataset.mealIdx = mi;
 
     const h = document.createElement('h3');
     h.textContent = m.name;
@@ -834,7 +839,10 @@ function render() {
       // Macros display
       const macros = document.createElement('div');
       macros.className = 'sub';
-      macros.textContent = '—';
+      macros.dataset.mealIdx = mi;
+      macros.dataset.rowIdx = ri;
+      const M = macrosFor(r.food, r.serv);
+      macros.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
 
       // Delete button
       const del = document.createElement('button');
@@ -846,7 +854,6 @@ function render() {
       del.addEventListener('click', () => {
         m.rows.splice(ri, 1);
         render();
-        updateTotals();
         saveLocal();
       });
 
@@ -865,7 +872,6 @@ function render() {
     add.addEventListener('click', () => {
       m.rows.push({food: FOOD_DB[0].k, serv: 1});
       render();
-      updateTotals();
       saveLocal();
     });
 
@@ -878,7 +884,17 @@ function render() {
 
     const fatBadge = document.createElement('span');
     fatBadge.className = 'chip';
-    fatBadge.textContent = 'Fat 0 g';
+    fatBadge.dataset.mealIdx = mi;
+    
+    // Calculate meal fat total
+    let mealFat = 0;
+    m.rows.forEach(r => {
+      const M = macrosFor(r.food, r.serv);
+      mealFat += M.F;
+    });
+    
+    fatBadge.textContent = `Fat ${mealFat.toFixed(1)} g`;
+    fatBadge.classList.add(mealFat <= 20 ? 'ok' : mealFat <= 25 ? 'warn' : 'bad');
 
     const hint = document.createElement('span');
     hint.className = 'fat-note';
@@ -893,78 +909,85 @@ function render() {
     mealsEl.appendChild(card);
   });
 
-  updateTotals();
+  updateDailyTotals();
 }
 
-// ====== UPDATE TOTALS ======
-function updateTotals() {
-  // Update meal rows macros
-  $('.card').forEach((card, mi) => {
-    const m = state.meals[mi];
-    if (!m) return;
+// ====== UPDATE FUNCTIONS ======
+function updateMacroDisplay(mealIdx, rowIdx) {
+  const card = document.querySelector(`[data-meal-idx="${mealIdx}"]`);
+  if (!card) return;
+  
+  const row = card.querySelectorAll('.row')[rowIdx];
+  if (!row) return;
+  
+  const macroEl = row.querySelector('.sub');
+  if (!macroEl) return;
+  
+  const r = state.meals[mealIdx].rows[rowIdx];
+  const M = macrosFor(r.food, r.serv);
+  macroEl.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
+}
 
-    let mealP = 0, mealC = 0, mealF = 0, mealK = 0;
+function updateMealTotals(mealIdx) {
+  const card = document.querySelector(`[data-meal-idx="${mealIdx}"]`);
+  if (!card) return;
+  
+  const m = state.meals[mealIdx];
+  let mealFat = 0;
+  
+  m.rows.forEach(r => {
+    const M = macrosFor(r.food, r.serv);
+    mealFat += M.F;
+  });
+  
+  const fatBadge = card.querySelector('.chip');
+  if (fatBadge) {
+    fatBadge.textContent = `Fat ${mealFat.toFixed(1)} g`;
+    fatBadge.classList.remove('ok', 'warn', 'bad');
+    fatBadge.classList.add(mealFat <= 20 ? 'ok' : mealFat <= 25 ? 'warn' : 'bad');
+  }
+}
 
-    card.querySelectorAll('.row').forEach((row, ri) => {
-      const r = m.rows[ri];
-      if (!r) return;
-
+function updateDailyTotals() {
+  // Calculate daily totals
+  let totalP = 0, totalC = 0, totalF = 0, totalK = 0;
+  
+  state.meals.forEach(m => {
+    m.rows.forEach(r => {
       const M = macrosFor(r.food, r.serv);
-      mealP += M.P;
-      mealC += M.C;
-      mealF += M.F;
-      mealK += M.K;
-
-      // Update macros display
-      const mac = row.querySelector('.sub');
-      if (mac) {
-        mac.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
-      }
+      totalP += M.P;
+      totalC += M.C;
+      totalF += M.F;
+      totalK += M.K;
     });
-
-    // Update fat chip
-    const chip = card.querySelector('.chip');
-    if (chip) {
-      chip.textContent = `Fat ${mealF.toFixed(1)} g`;
-      chip.classList.remove('ok', 'warn', 'bad');
-      if (mealF <= 20) chip.classList.add('ok');
-      else if (mealF <= 25) chip.classList.add('warn');
-      else chip.classList.add('bad');
-    }
   });
 
-  // Calculate daily totals
-  const totals = state.meals.flatMap(m => m.rows).map(r => macrosFor(r.food, r.serv));
-  const P = sum(totals, 'P');
-  const C = sum(totals, 'C');
-  const F = sum(totals, 'F');
-  const K = sum(totals, 'K');
-
+  // Update display
   const totP = document.getElementById('totP');
   const totC = document.getElementById('totC');
   const totF = document.getElementById('totF');
   const totK = document.getElementById('totK');
   
-  if (totP) totP.textContent = `${Math.round(P)} g`;
-  if (totC) totC.textContent = `${Math.round(C)} g`;
-  if (totF) totF.textContent = `${Math.round(F)} g`;
-  if (totK) totK.textContent = `${Math.round(K)} kcal`;
+  if (totP) totP.textContent = `${Math.round(totalP)} g`;
+  if (totC) totC.textContent = `${Math.round(totalC)} g`;
+  if (totF) totF.textContent = `${Math.round(totalF)} g`;
+  if (totK) totK.textContent = `${Math.round(totalK)} kcal`;
 
   const T = TARGETS[state.dayType];
-  bar('#barP', P / T.P * 100);
+  bar('#barP', totalP / T.P * 100);
+  bar('#barC', totalC / T.C * 100);
+  bar('#barF', totalF / T.F * 100);
+  bar('#barK', totalK / T.K * 100);
   
   const remP = document.getElementById('remP');
   const remC = document.getElementById('remC');
   const remF = document.getElementById('remF');
   const remK = document.getElementById('remK');
   
-  if (remP) remP.textContent = `${fmtRem(T.P - P)} left`;
-  bar('#barC', C / T.C * 100);
-  if (remC) remC.textContent = `${fmtRem(T.C - C)} left`;
-  bar('#barF', F / T.F * 100);
-  if (remF) remF.textContent = `${fmtRem(T.F - F)} left`;
-  bar('#barK', K / T.K * 100);
-  if (remK) remK.textContent = `${fmtRem(T.K - K, 'kcal')} left`;
+  if (remP) remP.textContent = `${fmtRem(T.P - totalP)} left`;
+  if (remC) remC.textContent = `${fmtRem(T.C - totalC)} left`;
+  if (remF) remF.textContent = `${fmtRem(T.F - totalF)} left`;
+  if (remK) remK.textContent = `${fmtRem(T.K - totalK, 'kcal')} left`;
 }
 
 // ====== DAY TYPE ======
@@ -976,6 +999,7 @@ function applyDayType() {
   const tgF = document.getElementById('tgF');
   const tgK = document.getElementById('tgK');
   const pill = document.getElementById('dayPill');
+  const dayTypeSelect = document.getElementById('dayType');
   
   if (tgP) tgP.textContent = t.P;
   if (tgC) tgC.textContent = t.C;
@@ -987,7 +1011,11 @@ function applyDayType() {
     pill.className = `pill ${t.pill}`;
   }
   
-  updateTotals();
+  if (dayTypeSelect) {
+    dayTypeSelect.value = state.dayType;
+  }
+  
+  updateDailyTotals();
   saveLocal();
 }
 
@@ -1067,7 +1095,6 @@ function importJSON() {
       state = {...state, ...parsed};
       render();
       applyDayType();
-      saveLocal();
       alert('Plan imported successfully!');
     } else {
       alert('Invalid plan format');
@@ -1081,7 +1108,6 @@ function resetPlan() {
   if (!confirm('Reset to default meals? This will clear your current plan.')) return;
   state.meals = JSON.parse(JSON.stringify(DEFAULT_MEALS));
   render();
-  updateTotals();
   saveLocal();
 }
 
@@ -1126,19 +1152,17 @@ function initEventListeners() {
 
 // ====== INITIALIZE ======
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize the day type dropdown
+  loadLocal();
+  
+  // Set initial day type in dropdown
   const dayTypeSelect = document.getElementById('dayType');
   if (dayTypeSelect) {
     dayTypeSelect.value = state.dayType;
   }
   
-  loadLocal();
   render();
   applyDayType();
   initEventListeners();
-  
-  // Log for debugging
-  console.log('App initialized with', state.meals.length, 'meals');
 });
 </script>
 </body>
