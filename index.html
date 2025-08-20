@@ -80,14 +80,14 @@
 
   /* Searchable picker + stepper */
   .picker{display:flex;gap:4px;align-items:center}
-  .picker input[type="text"]{flex:1 1 auto;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.3rem;padding:.35rem;font-size:.8rem}
+  .picker select{flex:1 1 auto;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.3rem;padding:.35rem;font-size:.8rem}
   .stepper{display:flex;align-items:center;gap:4px}
   .stepper input{width:60px;text-align:center;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.3rem;padding:.3rem;font-size:.8rem}
   .stepper .u{color:var(--muted);font-size:.75rem}
   .stepper .pm{width:26px;height:26px;border-radius:.3rem;border:1px solid var(--border);background:var(--panel-2);color:#fff;cursor:pointer;font-size:.8rem}
 
   select, input[type="number"]{background:#fff;color:#111;border:1px solid #d1d5db;border-radius:.3rem;padding:.35rem;font-size:.8rem}
-  select:focus,input:focus, .picker input[type="text"]:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
+  select:focus,input:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
 
   /* ====== SIDEBAR ====== */
   .sidebar{
@@ -193,9 +193,6 @@
   </div>
 </div>
 
-<!-- global datalist for searchable foods -->
-<datalist id="foodsList"></datalist>
-
 <script>
 /* =======================
    DATA: Food database
@@ -279,76 +276,50 @@ let state = {
 const $ = sel => document.querySelector(sel);
 const mealsEl = $('#meals');
 
-/* Build global datalist */
-const foodsList = document.getElementById('foodsList');
-FOOD_DB.forEach(f=>{
-  const opt = document.createElement('option');
-  opt.value = f.name; // visible text
-  opt.setAttribute('data-key', f.k); // not used by browser, kept for debugging
-  foodsList.appendChild(opt);
-});
-
-/* Fast name->key map (case-insensitive exact match) */
-const NAME_TO_KEY = new Map(FOOD_DB.map(f=>[f.name.toLowerCase(), f.k]));
-
 /* =======================
    Rendering
    ======================= */
-function buildFoodSearch(selectedKey){
-  const f = FOOD_DB.find(x=>x.k===selectedKey) || FOOD_DB[0];
+function buildFoodDropdown(selectedKey, mealIdx, rowIdx){
   const wrap = document.createElement('div');
   wrap.className='picker';
 
-  const input = document.createElement('input');
-  input.type='text';
-  input.setAttribute('list','foodsList');
-  input.value = f.name;
-  input.setAttribute('aria-label','Food');
-  input.dataset.key = f.k; // keep the current key in sync
-
-  const tryCommit = ()=>{
-    const raw = input.value.trim();
-    if(!raw){ return; }
-    const exact = NAME_TO_KEY.get(raw.toLowerCase());
-    if(exact){
-      // set key + emit change upstream
-      if(input.dataset.key !== exact){
-        input.dataset.key = exact;
-        wrap.dispatchEvent(new CustomEvent('foodchange', {detail: exact, bubbles:true}));
-      }
-      // ensure normalized name text (capitalization, etc.)
-      const nf = foodByKey(exact);
-      if(nf && nf.name !== input.value) input.value = nf.name;
-    }
-  };
-
-  // respond quickly as user picks from datalist
-  input.addEventListener('input', tryCommit);
-  input.addEventListener('change', tryCommit);
-  input.addEventListener('blur', ()=>{
-    // on blur, also allow unique prefix match to be forgiving
-    let v = input.value.trim().toLowerCase();
-    if(!v) return;
-    let key = NAME_TO_KEY.get(v);
-    if(!key){
-      const candidate = FOOD_DB.find(x=>x.name.toLowerCase().startsWith(v));
-      if(candidate) key = candidate.k;
-    }
-    if(key){
-      const nf = foodByKey(key);
-      input.value = nf.name;
-      if(input.dataset.key !== key){
-        input.dataset.key = key;
-        wrap.dispatchEvent(new CustomEvent('foodchange', {detail:key, bubbles:true}));
-      }
-    }
+  const select = document.createElement('select');
+  select.setAttribute('aria-label','Food');
+  
+  // Group foods by category
+  const categories = {};
+  FOOD_DB.forEach(f => {
+    if (!categories[f.cat]) categories[f.cat] = [];
+    categories[f.cat].push(f);
   });
 
-  wrap.appendChild(input);
+  // Build dropdown with optgroups
+  Object.keys(categories).forEach(cat => {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = cat;
+    
+    categories[cat].forEach(f => {
+      const option = document.createElement('option');
+      option.value = f.k;
+      option.textContent = f.name;
+      if (f.k === selectedKey) option.selected = true;
+      optgroup.appendChild(option);
+    });
+    
+    select.appendChild(optgroup);
+  });
+
+  select.addEventListener('change', () => {
+    state.meals[mealIdx].rows[rowIdx].food = select.value;
+    updateTotals();
+    saveLocal();
+  });
+
+  wrap.appendChild(select);
   return wrap;
 }
 
-function buildStepper(servVal=1){
+function buildStepper(servVal=1, mealIdx, rowIdx){
   const s = document.createElement('div'); 
   s.className='stepper';
   
@@ -370,18 +341,27 @@ function buildStepper(servVal=1){
   unit.className='u'; 
   unit.textContent='serv';
 
-  minus.addEventListener('click', ()=>{ 
-    let v=parseFloat(inp.value)||0; 
-    v=Math.max(0, v-0.25); 
-    inp.value=v.toFixed(2).replace(/\.00$/,''); 
-    inp.dispatchEvent(new Event('input')); 
+  const updateServing = (newVal) => {
+    inp.value = newVal.toFixed(2).replace(/\.00$/,'');
+    state.meals[mealIdx].rows[rowIdx].serv = parseFloat(inp.value) || 0;
+    updateTotals();
+    saveLocal();
+  };
+
+  minus.addEventListener('click', () => { 
+    let v = parseFloat(inp.value) || 0; 
+    updateServing(Math.max(0, v - 0.25));
   });
   
-  plus.addEventListener('click', ()=>{ 
-    let v=parseFloat(inp.value)||0; 
-    v=v+0.25; 
-    inp.value=v.toFixed(2).replace(/\.00$/,''); 
-    inp.dispatchEvent(new Event('input')); 
+  plus.addEventListener('click', () => { 
+    let v = parseFloat(inp.value) || 0; 
+    updateServing(v + 0.25);
+  });
+
+  inp.addEventListener('input', () => {
+    state.meals[mealIdx].rows[rowIdx].serv = parseFloat(inp.value) || 0;
+    updateTotals();
+    saveLocal();
   });
 
   s.appendChild(minus); 
@@ -394,7 +374,7 @@ function buildStepper(servVal=1){
 function render(){
   mealsEl.innerHTML = '';
   
-  state.meals.forEach((m,mi)=>{
+  state.meals.forEach((m, mi) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.meal = m.key;
@@ -406,46 +386,36 @@ function render(){
     const rowsWrap = document.createElement('div');
     rowsWrap.className='rows';
 
-    m.rows.forEach((r,ri)=>{
+    m.rows.forEach((r, ri) => {
       const row = document.createElement('div');
       row.className = 'row';
-      row.dataset.row=ri;
+      row.dataset.row = ri;
 
-      // food searchable picker
-      const picker = buildFoodSearch(r.food);
-      picker.addEventListener('foodchange', (ev)=>{ 
-        r.food = ev.detail; 
-        updateTotals(); 
-        saveLocal(); 
-      });
+      // Food dropdown
+      const dropdown = buildFoodDropdown(r.food, mi, ri);
 
-      // stepper
-      const step = buildStepper(r.serv ?? 1);
-      step.input.addEventListener('input', ()=>{ 
-        r.serv = parseFloat(step.input.value)||0; 
-        updateTotals(); 
-        saveLocal(); 
-      });
+      // Stepper
+      const step = buildStepper(r.serv ?? 1, mi, ri);
 
-      // macros display (always visible)
+      // Macros display
       const macros = document.createElement('div'); 
       macros.className='sub'; 
       macros.textContent='—';
 
-      // delete
+      // Delete button
       const del = document.createElement('button'); 
       del.className='btn remove'; 
       del.title='Remove'; 
       del.setAttribute('aria-label','Remove food'); 
       del.textContent='✕';
-      del.addEventListener('click',()=>{ 
-        m.rows.splice(ri,1); 
+      del.addEventListener('click', () => { 
+        m.rows.splice(ri, 1); 
         render(); 
         updateTotals(); 
         saveLocal(); 
       });
 
-      row.appendChild(picker);
+      row.appendChild(dropdown);
       row.appendChild(step.wrap);
       row.appendChild(macros);
       row.appendChild(del);
@@ -456,8 +426,8 @@ function render(){
     const add = document.createElement('button');
     add.className='btn add-row';
     add.textContent='+ Add Food';
-    add.addEventListener('click',()=>{
-      m.rows.push({food:FOOD_DB[0].k,serv:1});
+    add.addEventListener('click', () => {
+      m.rows.push({food: FOOD_DB[0].k, serv: 1});
       render(); 
       updateTotals(); 
       saveLocal();
@@ -494,72 +464,69 @@ function render(){
    Math helpers
    ======================= */
 function foodByKey(k){ 
-  return FOOD_DB.find(f=>f.k===k); 
+  return FOOD_DB.find(f => f.k === k); 
 }
 
-function macrosFor(k,serv=1){
+function macrosFor(k, serv = 1){
   const f = foodByKey(k); 
-  if(!f) return {P:0,C:0,F:0,K:0};
+  if(!f) return {P:0, C:0, F:0, K:0};
   return {
-    P:f.P*serv, 
-    C:f.C*serv, 
-    F:f.F*serv, 
-    K:f.K*serv
+    P: f.P * serv, 
+    C: f.C * serv, 
+    F: f.F * serv, 
+    K: f.K * serv
   };
 }
 
-function sum(arr,prop){ 
-  return arr.reduce((a,b)=>a+(b[prop]||0),0); 
+function sum(arr, prop){ 
+  return arr.reduce((a, b) => a + (b[prop] || 0), 0); 
 }
 
 /* =======================
    Update UI numbers
    ======================= */
 function updateTotals(){
-  // Update meal rows macros (source of truth = r.food)
-  document.querySelectorAll('.card').forEach((card,mi)=>{
+  // Update meal rows macros
+  document.querySelectorAll('.card').forEach((card, mi) => {
     const m = state.meals[mi];
-    let mealP=0, mealC=0, mealF=0, mealK=0;
+    if (!m) return; // Safety check
+    
+    let mealP = 0, mealC = 0, mealF = 0, mealK = 0;
 
-    card.querySelectorAll('.row').forEach((row,ri)=>{
+    card.querySelectorAll('.row').forEach((row, ri) => {
       const r = m.rows[ri];
+      if (!r) return; // Safety check
 
-      // keep the visible input synced with current key
-      const input = row.querySelector('input[list="foodsList"]');
-      const f = foodByKey(r.food) || FOOD_DB[0];
-      if (input && input.value !== f.name) input.value = f.name;
-      if (input && input.dataset.key !== f.k) input.dataset.key = f.k;
-
-      const servInput = row.querySelector('.stepper input');
-      const serv = parseFloat(servInput.value)||0;
-      r.serv = serv;
-
-      const M = macrosFor(r.food, serv);
+      const M = macrosFor(r.food, r.serv);
       mealP += M.P; 
       mealC += M.C; 
       mealF += M.F; 
       mealK += M.K;
 
-      // Always show macros
+      // Update macros display
       const mac = row.querySelector('.sub');
-      mac.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
+      if (mac) {
+        mac.textContent = `${M.P.toFixed(1)}P • ${M.C.toFixed(1)}C • ${M.F.toFixed(1)}F • ${Math.round(M.K)} kcal`;
+      }
     });
 
     // Update fat chip
     const chip = card.querySelector('.chip');
-    chip.textContent = `Fat ${mealF.toFixed(1)} g`;
-    chip.classList.remove('ok','warn','bad');
-    if(mealF <= 20) chip.classList.add('ok');
-    else if(mealF <= 25) chip.classList.add('warn');
-    else chip.classList.add('bad');
+    if (chip) {
+      chip.textContent = `Fat ${mealF.toFixed(1)} g`;
+      chip.classList.remove('ok','warn','bad');
+      if(mealF <= 20) chip.classList.add('ok');
+      else if(mealF <= 25) chip.classList.add('warn');
+      else chip.classList.add('bad');
+    }
   });
 
   // Calculate daily totals
-  const totals = state.meals.flatMap(m=>m.rows).map(r=>macrosFor(r.food,r.serv));
-  const P = sum(totals,'P'), 
-        C = sum(totals,'C'), 
-        F = sum(totals,'F'), 
-        K = sum(totals,'K');
+  const totals = state.meals.flatMap(m => m.rows).map(r => macrosFor(r.food, r.serv));
+  const P = sum(totals, 'P'), 
+        C = sum(totals, 'C'), 
+        F = sum(totals, 'F'), 
+        K = sum(totals, 'K');
 
   $('#totP').textContent = `${Math.round(P)} g`;
   $('#totC').textContent = `${Math.round(C)} g`;
@@ -577,135 +544,4 @@ function updateTotals(){
   $('#remK').textContent = `${fmtRem(T.K-K,'kcal')} left`;
 }
 
-function fmtRem(v, unit='g'){
-  const n = Math.round(v);
-  if (n === 0) return `0 ${unit}`;
-  if (n < 0) return `${Math.abs(n)} ${unit} over`;
-  return `${n} ${unit}`;
-}
-
-function bar(sel, pct){
-  const el = document.querySelector(sel);
-  const clamped = Math.max(0, Math.min(100, pct||0));
-  el.style.width = clamped + '%';
-}
-
-/* =======================
-   Day type (targets + pill)
-   ======================= */
-function applyDayType(){
-  const t = TARGETS[state.dayType];
-  $('#tgP').textContent = t.P;
-  $('#tgC').textContent = t.C;
-  $('#tgF').textContent = t.F;
-  $('#tgK').textContent = t.K;
-  const pill = $('#dayPill');
-  pill.textContent = t.label;
-  pill.className = `pill ${t.pill}`;
-  updateTotals(); 
-  saveLocal();
-}
-
-/* =======================
-   Persistence + import/export/download
-   ======================= */
-const SAVE_KEY = 'macro_planner_v3';
-
-function saveLocal(){ 
-  localStorage.setItem(SAVE_KEY, JSON.stringify(state)); 
-}
-
-function loadLocal(){
-  const raw = localStorage.getItem(SAVE_KEY);
-  if(!raw) return;
-  try{
-    const parsed = JSON.parse(raw);
-    if(parsed?.meals && parsed?.dayType){
-      state = {...state, ...parsed};
-    }
-  }catch(e){
-    console.error('Failed to load saved state:', e);
-  }
-}
-
-function exportJSON(){
-  const txt = JSON.stringify(state, null, 2);
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(txt).then(()=>alert('Copied current plan JSON to clipboard.'));
-  } else {
-    const ta = document.createElement('textarea'); 
-    ta.value = txt; 
-    document.body.appendChild(ta); 
-    ta.select();
-    document.execCommand('copy'); 
-    document.body.removeChild(ta); 
-    alert('Copied current plan JSON to clipboard.');
-  }
-}
-
-function downloadJSON(){
-  const txt = JSON.stringify(state, null, 2);
-  const blob = new Blob([txt], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const ts = new Date().toISOString().slice(0,10);
-  a.href = url; 
-  a.download = `meal-plan-${ts}.json`;
-  document.body.appendChild(a); 
-  a.click(); 
-  a.remove(); 
-  URL.revokeObjectURL(url);
-}
-
-function importJSON(){
-  const txt = prompt('Paste plan JSON here:');
-  if(!txt) return;
-  try{ 
-    const parsed = JSON.parse(txt);
-    state = {...state, ...parsed}; 
-    render(); 
-    applyDayType(); 
-    saveLocal(); 
-  }
-  catch(e){ 
-    alert('Invalid JSON'); 
-  }
-}
-
-function resetPlan(){
-  if(!confirm('Reset to default meals?')) return;
-  state.meals = JSON.parse(JSON.stringify(DEFAULT_MEALS));
-  render(); 
-  updateTotals(); 
-  saveLocal();
-}
-
-/* =======================
-   Event Listeners
-   ======================= */
-$('#exportBtn').addEventListener('click', exportJSON);
-$('#downloadBtn').addEventListener('click', downloadJSON);
-$('#importBtn').addEventListener('click', importJSON);
-$('#resetBtn').addEventListener('click', resetPlan);
-$('#saveBtn')?.addEventListener('click', ()=>{
-  saveLocal();
-  alert('Saved to browser storage!');
-});
-$('#clearSaveBtn')?.addEventListener('click', ()=>{ 
-  localStorage.removeItem(SAVE_KEY); 
-  alert('Saved state cleared.'); 
-});
-$('#dayType').addEventListener('change', e=>{ 
-  state.dayType = e.target.value; 
-  applyDayType(); 
-});
-
-/* =======================
-   Initialize
-   ======================= */
-loadLocal();
-render();
-applyDayType();
-</script>
-</body>
-</html>
+function fmtRem(
