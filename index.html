@@ -1101,28 +1101,39 @@ const FOODS = [
   {k:"greek2_170g", name:"Greek Yogurt 2% (170g)", cat:"Dairy", P:15, C:6, F:3, Fb:0, K:120},
   {k:"cottage0_1c", name:"Cottage Cheese 0% (1 cup)", cat:"Dairy", P:24, C:10, F:0, Fb:0, K:160},
   {k:"cottage2_half", name:"Cottage Cheese 2% (½ cup)", cat:"Dairy", P:12, C:5, F:2, Fb:0, K:100},
+  {k:"cottage4_half", name:"Cottage Cheese 4% (½ cup)", cat:"Dairy", P:12, C:4, F:5, Fb:0, K:110},
   {k:"skyr_1c", name:"Skyr (1 cup)", cat:"Dairy", P:20, C:15, F:1, Fb:0, K:150},
   {k:"fairlife_1c", name:"Fairlife Milk (1 cup)", cat:"Dairy", P:13, C:6, F:2.5, Fb:0, K:80},
+  {k:"milk_1pct_1c", name:"1% Milk (1 cup)", cat:"Dairy", P:8, C:12, F:2.5, Fb:0, K:100},
   {k:"whey_iso", name:"Whey Isolate (1 scoop)", cat:"Dairy", P:25, C:2, F:1, Fb:0, K:120},
   {k:"casein_1sc", name:"Casein Protein (1 scoop)", cat:"Dairy", P:24, C:3, F:1, Fb:0, K:120},
+  {k:"chobani_protein_drink", name:"Chobani 20g Protein Drink", cat:"Dairy", P:20, C:18, F:2, Fb:0, K:170},
   {k:"cheese_str", name:"String Cheese (1 stick)", cat:"Dairy", P:6, C:1, F:5, Fb:0, K:80},
+  {k:"cheese_provolone", name:"Provolone Slice (1 slice)", cat:"Dairy", P:5, C:1, F:5, Fb:0, K:70},
   {k:"milk_skim_1c", name:"Skim Milk (1 cup)", cat:"Dairy", P:8, C:12, F:0, Fb:0, K:80},
 
   // PROTEIN - Lean meats & seafood
   {k:"chicken_4oz", name:"Chicken Breast (4 oz)", cat:"Protein", P:35, C:0, F:4, Fb:0, K:185},
   {k:"chicken_6oz", name:"Chicken Breast (6 oz)", cat:"Protein", P:52, C:0, F:6, Fb:0, K:280},
   {k:"chicken_8oz", name:"Chicken Breast (8 oz)", cat:"Protein", P:70, C:0, F:8, Fb:0, K:370},
+  {k:"ground_chicken_4oz", name:"Ground Chicken (4 oz)", cat:"Protein", P:21, C:0, F:9, Fb:0, K:170},
   {k:"turkey_breast_4oz", name:"Turkey Breast (4 oz)", cat:"Protein", P:28, C:0, F:1, Fb:0, K:120},
   {k:"turkey_deli_3oz", name:"Turkey Deli Slices (3 oz)", cat:"Protein", P:21, C:2, F:1.5, Fb:0, K:110},
   {k:"turkey_ground_4oz", name:"Ground Turkey 93% (4 oz)", cat:"Protein", P:30, C:0, F:8, Fb:0, K:200},
+  {k:"turkey_snack_stick", name:"Turkey Snack Stick (1 oz)", cat:"Protein", P:9, C:1, F:3, Fb:0, K:70},
+  {k:"ham_deli_3oz", name:"Ham Deli Slices (3 oz)", cat:"Protein", P:15, C:2, F:2, Fb:0, K:90},
   {k:"beef_93_4oz", name:"Ground Beef 93/7 (4 oz)", cat:"Protein", P:28, C:0, F:8, Fb:0, K:190},
   {k:"pork_tender_4oz", name:"Pork Tenderloin (4 oz)", cat:"Protein", P:30, C:0, F:4, Fb:0, K:160},
+  {k:"bacon_2sl", name:"Bacon Thick Cut (2 slices)", cat:"Protein", P:6, C:0, F:9, Fb:0, K:110},
   {k:"salmon_4oz", name:"Salmon (4 oz)", cat:"Protein", P:28, C:0, F:10, Fb:0, K:220},
   {k:"salmon_5oz", name:"Salmon (5 oz)", cat:"Protein", P:34, C:0, F:12, Fb:0, K:280},
+  {k:"ahi_tuna_4oz", name:"Ahi Tuna (4 oz)", cat:"Protein", P:26, C:0, F:1, Fb:0, K:120},
   {k:"cod_6oz", name:"Cod/White Fish (6 oz)", cat:"Protein", P:40, C:0, F:2, Fb:0, K:180},
   {k:"tilapia_6oz", name:"Tilapia (6 oz)", cat:"Protein", P:44, C:0, F:4, Fb:0, K:220},
   {k:"shrimp_4oz", name:"Shrimp (4 oz)", cat:"Protein", P:24, C:1, F:1, Fb:0, K:120},
   {k:"tuna_can", name:"Tuna in Water (1 can)", cat:"Protein", P:25, C:0, F:1, Fb:0, K:110},
+  {k:"egg_whole", name:"Whole Egg (1 large)", cat:"Protein", P:6, C:0, F:5, Fb:0, K:70},
+  {k:"egg_hardboiled", name:"Hard Boiled Egg (1 egg)", cat:"Protein", P:6, C:0, F:5, Fb:0, K:70},
   {k:"egg_whites_4", name:"Egg Whites (4 large)", cat:"Protein", P:14, C:0, F:0, Fb:0, K:60},
   {k:"eggs_2", name:"Whole Eggs (2 large)", cat:"Protein", P:12, C:1, F:10, Fb:0, K:140},
   {k:"egg_white_1c", name:"Egg Whites (1 cup)", cat:"Protein", P:26, C:2, F:0, Fb:0, K:120},
@@ -1136,7 +1147,9 @@ const FOODS = [
   {k:"sweet_potato_med", name:"Sweet Potato (1 medium)", cat:"Grains", P:2, C:27, F:0, Fb:4, K:115},
   {k:"potato_med", name:"Potato (1 medium)", cat:"Grains", P:3, C:37, F:0, Fb:3, K:160},
   {k:"bread_whole_1", name:"Whole Wheat Bread (1 slice)", cat:"Grains", P:4, C:15, F:1, Fb:2, K:80},
+  {k:"bread_dkb_21grain", name:"Dave's Killer 21 Grain (1 slice)", cat:"Grains", P:5, C:22, F:1, Fb:5, K:110},
   {k:"bread_ezekiel", name:"Ezekiel Bread (1 slice)", cat:"Grains", P:5, C:15, F:1, Fb:3, K:80},
+  {k:"bagel_plain", name:"Plain Bagel (1 large)", cat:"Grains", P:10, C:56, F:2, Fb:2, K:280},
   {k:"wrap_wheat", name:"Whole Wheat Wrap (1 large)", cat:"Grains", P:5, C:25, F:3, Fb:3, K:140},
   {k:"lentils_half", name:"Lentils (½ cup cooked)", cat:"Grains", P:9, C:20, F:0, Fb:8, K:115},
   {k:"black_beans_half", name:"Black Beans (½ cup)", cat:"Grains", P:7, C:20, F:0, Fb:7, K:110},
@@ -1147,14 +1160,19 @@ const FOODS = [
   {k:"apple_small", name:"Apple (1 small)", cat:"Fruit", P:0, C:20, F:0, Fb:3, K:80},
   {k:"banana_med", name:"Banana (1 medium)", cat:"Fruit", P:1, C:27, F:0, Fb:3, K:105},
   {k:"berries_mixed_1c", name:"Mixed Berries (1 cup)", cat:"Fruit", P:1, C:15, F:0, Fb:4, K:60},
+  {k:"berries_triple_1c", name:"Triple Berry Blend Frozen (1 cup)", cat:"Fruit", P:1, C:15, F:0, Fb:4, K:70},
   {k:"blueberries_half", name:"Blueberries (½ cup)", cat:"Fruit", P:0.5, C:11, F:0, Fb:2, K:42},
   {k:"strawberries_1c", name:"Strawberries (1 cup)", cat:"Fruit", P:1, C:12, F:0, Fb:3, K:50},
+  {k:"grapes_1c", name:"Grapes (1 cup)", cat:"Fruit", P:1, C:27, F:0, Fb:1, K:104},
+  {k:"cantaloupe_1c", name:"Cantaloupe (1 cup cubed)", cat:"Fruit", P:1, C:13, F:0, Fb:1, K:54},
+  {k:"kiwi_1", name:"Kiwi (1 medium)", cat:"Fruit", P:1, C:10, F:0, Fb:2, K:42},
   {k:"orange_med", name:"Orange (1 medium)", cat:"Fruit", P:1, C:15, F:0, Fb:3, K:60},
 
   // VEGETABLES
   {k:"broccoli_1c", name:"Broccoli (1 cup)", cat:"Vegetables", P:3, C:6, F:0, Fb:2, K:31},
   {k:"broccoli_2c", name:"Broccoli (2 cups)", cat:"Vegetables", P:6, C:12, F:0, Fb:4, K:62},
   {k:"spinach_2c", name:"Spinach Raw (2 cups)", cat:"Vegetables", P:2, C:2, F:0, Fb:2, K:14},
+  {k:"spinach_baby_16oz", name:"Baby Spinach (16 oz bag)", cat:"Vegetables", P:13, C:16, F:2, Fb:10, K:104},
   {k:"kale_2c", name:"Kale (2 cups)", cat:"Vegetables", P:4, C:12, F:0, Fb:2, K:66},
   {k:"green_beans_1c", name:"Green Beans (1 cup)", cat:"Vegetables", P:2, C:7, F:0, Fb:3, K:31},
   {k:"asparagus_1c", name:"Asparagus (1 cup)", cat:"Vegetables", P:3, C:5, F:0, Fb:3, K:27},
@@ -1170,6 +1188,7 @@ const FOODS = [
   {k:"olive_oil_1tbsp", name:"Olive Oil (1 tbsp)", cat:"Fats", P:0, C:0, F:14, Fb:0, K:120},
   {k:"avocado_quarter", name:"Avocado (¼ medium)", cat:"Fats", P:1, C:3, F:6, Fb:2, K:60},
   {k:"almonds_1oz", name:"Almonds (1 oz / 23 nuts)", cat:"Fats", P:6, C:6, F:14, Fb:3, K:165},
+  {k:"cashews_1oz", name:"Cashews (1 oz / 18 nuts)", cat:"Fats", P:5, C:9, F:12, Fb:1, K:160},
   {k:"walnuts_half_oz", name:"Walnuts (½ oz)", cat:"Fats", P:2, C:2, F:9, Fb:1, K:93},
   {k:"pb_1tbsp", name:"Peanut Butter (1 tbsp)", cat:"Fats", P:4, C:3, F:8, Fb:1, K:95},
   {k:"hummus_2tbsp", name:"Hummus (2 tbsp)", cat:"Fats", P:2, C:4, F:3, Fb:1, K:50},
@@ -1599,7 +1618,7 @@ function renderMeals() {
           <button class="plus" data-meal="${mealIdx}" data-row="${rowIdx}">+</button>
         </div>
         <button class="remove-btn" data-meal="${mealIdx}" data-row="${rowIdx}">✕</button>
-        <div class="macros">${Math.round(macros.P)}P • ${Math.round(macros.C)}C • ${Math.round(macros.F)}F • ${Math.round(macros.Fb)}Fb • ${Math.round(macros.K)} cal</div>
+        <div class="macros">${Math.round(macros.P)}P • ${Math.round(macros.C)}C • ${Math.round(macros.F)}F • ${Math.round(macros.Fb)}Fb${macros.K > 0 ? ' • ' + Math.round(macros.K) + ' cal' : ''}</div>
       `;
       rowsContainer.appendChild(rowEl);
     });
