@@ -265,15 +265,15 @@ body {
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
 }
 .check-item:hover { border-color: var(--text-muted); }
 .check-item.checked {
-  background: var(--success-dim);
+  background: rgba(34, 197, 94, 0.25);
   border-color: var(--success);
   color: var(--success);
+  font-weight: 600;
 }
-.check-item input { display: none; }
 .check-item .check-box {
   width: 16px;
   height: 16px;
@@ -283,11 +283,13 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
+  color: transparent;
 }
 .check-item.checked .check-box {
   background: var(--success);
   border-color: var(--success);
   color: var(--bg);
+  font-weight: 700;
 }
 
 /* ====== MAIN GRID ====== */
@@ -890,36 +892,30 @@ body {
   <div class="checklist-card">
     <h3>📋 Daily Compliance</h3>
     <div class="checklist-items" id="checklistItems">
-      <label class="check-item" data-key="mealsLogged">
-        <input type="checkbox">
+      <div class="check-item" data-key="mealsLogged">
         <span class="check-box">✓</span>
         <span>Meals Logged</span>
-      </label>
-      <label class="check-item" data-key="waterHit">
-        <input type="checkbox">
+      </div>
+      <div class="check-item" data-key="waterHit">
         <span class="check-box">✓</span>
         <span>80+ oz Water</span>
-      </label>
-      <label class="check-item" data-key="stepsHit">
-        <input type="checkbox">
+      </div>
+      <div class="check-item" data-key="stepsHit">
         <span class="check-box">✓</span>
         <span>8,000+ Steps</span>
-      </label>
-      <label class="check-item" data-key="lunchWalk">
-        <input type="checkbox">
+      </div>
+      <div class="check-item" data-key="lunchWalk">
         <span class="check-box">✓</span>
         <span>Lunch Walk</span>
-      </label>
-      <label class="check-item" data-key="weighedIn">
-        <input type="checkbox">
+      </div>
+      <div class="check-item" data-key="weighedIn">
         <span class="check-box">✓</span>
         <span>Weighed In</span>
-      </label>
-      <label class="check-item" data-key="proteinHit">
-        <input type="checkbox">
+      </div>
+      <div class="check-item" data-key="proteinHit">
         <span class="check-box">✓</span>
         <span>Protein Target</span>
-      </label>
+      </div>
     </div>
   </div>
 
@@ -1573,7 +1569,6 @@ function renderChecklist() {
     const key = item.dataset.key;
     const checked = log.checklist[key] || false;
     item.classList.toggle('checked', checked);
-    item.querySelector('input').checked = checked;
   });
 }
 
