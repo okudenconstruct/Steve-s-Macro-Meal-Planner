@@ -1089,6 +1089,14 @@ body {
 <script>
 // ============ FOOD DATABASE ============
 const FOODS = [
+  // CUSTOM - Building blocks for on-the-fly foods
+  {k:"custom_protein_1g", name:"+ Protein (1g)", cat:"① Custom", P:1, C:0, F:0, Fb:0, K:4},
+  {k:"custom_carbs_1g", name:"+ Carbs (1g)", cat:"① Custom", P:0, C:1, F:0, Fb:0, K:4},
+  {k:"custom_fat_1g", name:"+ Fat (1g)", cat:"① Custom", P:0, C:0, F:1, Fb:0, K:9},
+  {k:"custom_fiber_1g", name:"+ Fiber (1g)", cat:"① Custom", P:0, C:0, F:0, Fb:1, K:2},
+  {k:"custom_cal_10", name:"+ Calories (10 kcal)", cat:"① Custom", P:0, C:0, F:0, Fb:0, K:10},
+  {k:"custom_meal_placeholder", name:"Custom Meal (set servings)", cat:"① Custom", P:1, C:1, F:1, Fb:0, K:17},
+
   // DAIRY - Lean options prioritized
   {k:"greek0_1c", name:"Greek Yogurt 0% (1 cup)", cat:"Dairy", P:24, C:9, F:0, Fb:0, K:140},
   {k:"greek2_170g", name:"Greek Yogurt 2% (170g)", cat:"Dairy", P:15, C:6, F:3, Fb:0, K:120},
