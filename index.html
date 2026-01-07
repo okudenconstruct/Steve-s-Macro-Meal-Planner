@@ -76,6 +76,11 @@ body {
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 .countdown {
   display: flex;
   gap: 1rem;
@@ -110,6 +115,40 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ====== SYNC STATUS ====== */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sync-status:hover {
+  border-color: var(--accent);
+}
+.sync-status .sync-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.sync-status.synced .sync-icon { background: var(--success); }
+.sync-status.syncing .sync-icon { 
+  background: var(--warning); 
+  animation: pulse 1s infinite;
+}
+.sync-status.error .sync-icon { background: var(--danger); }
+.sync-status.offline .sync-icon { background: var(--text-dim); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* ====== DATE NAV ====== */
@@ -805,6 +844,122 @@ body {
   color: var(--danger);
 }
 
+/* ====== MODAL ====== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.modal .form-group {
+  margin-bottom: 1rem;
+}
+.modal label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+.modal input[type="text"],
+.modal input[type="password"] {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.modal input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.modal .help-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+.modal .help-text a {
+  color: var(--accent);
+}
+.modal .modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.modal button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.modal .btn-cancel {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.modal .btn-cancel:hover { background: var(--border); }
+.modal .btn-save {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bg);
+}
+.modal .btn-save:hover { opacity: 0.9; }
+.modal .btn-danger {
+  background: var(--danger-dim);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.modal .sync-info {
+  background: var(--bg-card-2);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+.modal .sync-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+.modal .sync-info .info-label {
+  color: var(--text-muted);
+}
+.modal .sync-info .info-value {
+  font-family: var(--font-mono);
+}
+
 /* ====== SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-card); }
@@ -815,6 +970,7 @@ body {
 @media (max-width: 600px) {
   html { font-size: 13px; }
   .header { flex-direction: column; text-align: center; }
+  .header-right { flex-direction: column; }
   .countdown { justify-content: center; }
   .date-nav { flex-wrap: wrap; }
   .quick-stats { grid-template-columns: repeat(2, 1fr); }
@@ -834,16 +990,22 @@ body {
       <h1>Steve's Cut Tracker</h1>
       <div class="subtitle">Japan 2026 • 205 → 185 lbs</div>
     </div>
-    <div class="countdown">
-      <div class="countdown-item">
-        <div class="num" id="daysLeft">112</div>
-        <div class="label">Days Left</div>
+    <div class="header-right">
+      <div class="sync-status" id="syncStatus" title="Click to configure sync">
+        <span class="sync-icon"></span>
+        <span class="sync-text">Not configured</span>
       </div>
-      <div class="countdown-item">
-        <div class="num" id="weeksLeft">16</div>
-        <div class="label">Weeks</div>
+      <div class="countdown">
+        <div class="countdown-item">
+          <div class="num" id="daysLeft">112</div>
+          <div class="label">Days Left</div>
+        </div>
+        <div class="countdown-item">
+          <div class="num" id="weeksLeft">16</div>
+          <div class="label">Weeks</div>
+        </div>
+        <span class="phase-badge" id="phaseBadge">Phase 1: Weeks 1-4</span>
       </div>
-      <span class="phase-badge" id="phaseBadge">Phase 1: Weeks 1-4</span>
     </div>
   </header>
 
@@ -1075,10 +1237,56 @@ body {
   <!-- ACTIONS BAR -->
   <div class="actions-bar">
     <button class="primary" id="saveBtn">💾 Save</button>
+    <button id="syncNowBtn">🔄 Sync Now</button>
     <button id="exportBtn">📤 Export JSON</button>
     <button id="importBtn">📥 Import JSON</button>
     <button class="danger" id="resetDayBtn">Reset Day</button>
     <button class="danger" id="resetAllBtn">Reset All</button>
+  </div>
+</div>
+
+<!-- SYNC SETTINGS MODAL -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <h2>🔄 Sync Settings</h2>
+    
+    <div class="sync-info" id="syncInfo" style="display:none;">
+      <div class="info-row">
+        <span class="info-label">Status:</span>
+        <span class="info-value" id="modalSyncStatus">--</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Last Sync:</span>
+        <span class="info-value" id="lastSyncTime">Never</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Gist ID:</span>
+        <span class="info-value" id="gistIdDisplay">--</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="githubToken">GitHub Personal Access Token</label>
+      <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+      <div class="help-text">
+        Create a token at <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Settings → Tokens</a>.<br>
+        Select <strong>only the "gist" scope</strong>. The token is stored locally in your browser.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="gistIdInput">Gist ID (optional - leave blank to create new)</label>
+      <input type="text" id="gistIdInput" placeholder="abc123def456...">
+      <div class="help-text">
+        Enter an existing Gist ID to sync with, or leave blank to create a new private Gist on first save.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-danger" id="clearSyncBtn">Clear Sync</button>
+      <button class="btn-cancel" id="cancelSyncBtn">Cancel</button>
+      <button class="btn-save" id="saveSyncBtn">Save & Sync</button>
+    </div>
   </div>
 </div>
 
@@ -1392,6 +1600,7 @@ const REFERENCE = {
 
 // ============ STATE ============
 const STORAGE_KEY = 'steve_cut_tracker_v1';
+const SYNC_CONFIG_KEY = 'steve_cut_tracker_sync';
 const START_DATE = '2026-01-06';
 const END_DATE = '2026-04-27';
 const START_WEIGHT = 205;
@@ -1403,6 +1612,15 @@ let state = {
   dailyLogs: {},
   measurements: []
 };
+
+let syncConfig = {
+  token: null,
+  gistId: null,
+  lastSync: null
+};
+
+let syncStatus = 'offline'; // 'offline', 'synced', 'syncing', 'error'
+let syncDebounceTimer = null;
 
 // ============ UTILITIES ============
 function formatDate(d) {
@@ -1470,10 +1688,188 @@ function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 }
 
+// ============ GITHUB GIST SYNC ============
+const GIST_API = 'https://api.github.com/gists';
+const GIST_FILENAME = 'steve_cut_tracker_data.json';
+
+async function createGist(data) {
+  const response = await fetch(GIST_API, {
+    method: 'POST',
+    headers: {
+      'Authorization': `token ${syncConfig.token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      description: "Steve's Cut Tracker - Sync Data",
+      public: false,
+      files: {
+        [GIST_FILENAME]: {
+          content: JSON.stringify(data, null, 2)
+        }
+      }
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create Gist');
+  }
+  
+  return await response.json();
+}
+
+async function updateGist(data) {
+  const response = await fetch(`${GIST_API}/${syncConfig.gistId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `token ${syncConfig.token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      files: {
+        [GIST_FILENAME]: {
+          content: JSON.stringify(data, null, 2)
+        }
+      }
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update Gist');
+  }
+  
+  return await response.json();
+}
+
+async function fetchGist() {
+  const response = await fetch(`${GIST_API}/${syncConfig.gistId}`, {
+    headers: {
+      'Authorization': `token ${syncConfig.token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch Gist');
+  }
+  
+  const gist = await response.json();
+  const file = gist.files[GIST_FILENAME];
+  
+  if (!file) {
+    throw new Error('Data file not found in Gist');
+  }
+  
+  return JSON.parse(file.content);
+}
+
+function updateSyncStatus(status, message = null) {
+  syncStatus = status;
+  const el = document.getElementById('syncStatus');
+  el.className = `sync-status ${status}`;
+  
+  const textEl = el.querySelector('.sync-text');
+  switch (status) {
+    case 'synced':
+      textEl.textContent = message || 'Synced';
+      break;
+    case 'syncing':
+      textEl.textContent = 'Syncing...';
+      break;
+    case 'error':
+      textEl.textContent = message || 'Sync error';
+      break;
+    case 'offline':
+    default:
+      textEl.textContent = syncConfig.token ? 'Click to sync' : 'Not configured';
+  }
+}
+
+async function syncToGist() {
+  if (!syncConfig.token) {
+    updateSyncStatus('offline');
+    return;
+  }
+  
+  updateSyncStatus('syncing');
+  
+  try {
+    const dataToSync = {
+      ...state,
+      _syncedAt: new Date().toISOString()
+    };
+    
+    if (syncConfig.gistId) {
+      await updateGist(dataToSync);
+    } else {
+      const gist = await createGist(dataToSync);
+      syncConfig.gistId = gist.id;
+      saveSyncConfig();
+    }
+    
+    syncConfig.lastSync = new Date().toISOString();
+    saveSyncConfig();
+    updateSyncStatus('synced');
+    
+  } catch (error) {
+    console.error('Sync failed:', error);
+    updateSyncStatus('error', error.message);
+  }
+}
+
+async function syncFromGist() {
+  if (!syncConfig.token || !syncConfig.gistId) {
+    return false;
+  }
+  
+  updateSyncStatus('syncing');
+  
+  try {
+    const remoteData = await fetchGist();
+    
+    // Merge strategy: remote wins for dailyLogs, local currentDate preserved
+    state = {
+      ...remoteData,
+      currentDate: state.currentDate // Keep local current date
+    };
+    
+    // Also save to localStorage as backup
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    
+    syncConfig.lastSync = new Date().toISOString();
+    saveSyncConfig();
+    updateSyncStatus('synced');
+    
+    return true;
+  } catch (error) {
+    console.error('Fetch from Gist failed:', error);
+    updateSyncStatus('error', error.message);
+    return false;
+  }
+}
+
+function debouncedSync() {
+  if (syncDebounceTimer) {
+    clearTimeout(syncDebounceTimer);
+  }
+  
+  if (syncConfig.token) {
+    updateSyncStatus('syncing');
+    syncDebounceTimer = setTimeout(() => {
+      syncToGist();
+    }, 2000); // 2 second debounce
+  }
+}
+
 // ============ STORAGE ============
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    debouncedSync(); // Trigger Gist sync
   } catch (e) {
     console.error('Save failed:', e);
   }
@@ -1488,6 +1884,25 @@ function loadState() {
     }
   } catch (e) {
     console.error('Load failed:', e);
+  }
+}
+
+function saveSyncConfig() {
+  try {
+    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(syncConfig));
+  } catch (e) {
+    console.error('Save sync config failed:', e);
+  }
+}
+
+function loadSyncConfig() {
+  try {
+    const saved = localStorage.getItem(SYNC_CONFIG_KEY);
+    if (saved) {
+      syncConfig = { ...syncConfig, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.error('Load sync config failed:', e);
   }
 }
 
@@ -1511,6 +1926,13 @@ function renderHeader() {
   document.getElementById('daysLeft').textContent = daysLeft;
   document.getElementById('weeksLeft').textContent = weeksLeft;
   document.getElementById('phaseBadge').textContent = phase;
+  
+  // Update sync status display
+  if (syncConfig.token) {
+    updateSyncStatus(syncStatus);
+  } else {
+    updateSyncStatus('offline');
+  }
 }
 
 function renderDateNav() {
@@ -1969,6 +2391,35 @@ function render() {
   renderReference();
 }
 
+// ============ MODAL FUNCTIONS ============
+function openSyncModal() {
+  const modal = document.getElementById('syncModal');
+  modal.classList.add('open');
+  
+  // Populate current values
+  document.getElementById('githubToken').value = syncConfig.token || '';
+  document.getElementById('gistIdInput').value = syncConfig.gistId || '';
+  
+  // Show sync info if configured
+  const syncInfo = document.getElementById('syncInfo');
+  if (syncConfig.token) {
+    syncInfo.style.display = 'block';
+    document.getElementById('modalSyncStatus').textContent = syncStatus === 'synced' ? 'Connected' : syncStatus;
+    document.getElementById('lastSyncTime').textContent = syncConfig.lastSync 
+      ? new Date(syncConfig.lastSync).toLocaleString() 
+      : 'Never';
+    document.getElementById('gistIdDisplay').textContent = syncConfig.gistId 
+      ? syncConfig.gistId.substring(0, 12) + '...' 
+      : 'Not created yet';
+  } else {
+    syncInfo.style.display = 'none';
+  }
+}
+
+function closeSyncModal() {
+  document.getElementById('syncModal').classList.remove('open');
+}
+
 // ============ EVENT HANDLERS ============
 function initEvents() {
   // Date navigation
@@ -2152,10 +2603,66 @@ function initEvents() {
     renderProgress();
   });
 
+  // Sync status click
+  document.getElementById('syncStatus').addEventListener('click', openSyncModal);
+
+  // Sync modal events
+  document.getElementById('cancelSyncBtn').addEventListener('click', closeSyncModal);
+  
+  document.getElementById('syncModal').addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+      closeSyncModal();
+    }
+  });
+
+  document.getElementById('saveSyncBtn').addEventListener('click', async () => {
+    const token = document.getElementById('githubToken').value.trim();
+    const gistId = document.getElementById('gistIdInput').value.trim();
+    
+    if (!token) {
+      alert('Please enter a GitHub Personal Access Token');
+      return;
+    }
+    
+    syncConfig.token = token;
+    syncConfig.gistId = gistId || null;
+    saveSyncConfig();
+    
+    closeSyncModal();
+    
+    // Try to sync
+    if (syncConfig.gistId) {
+      // Load from existing Gist first
+      const loaded = await syncFromGist();
+      if (loaded) {
+        render();
+      }
+    } else {
+      // Create new Gist
+      await syncToGist();
+    }
+  });
+
+  document.getElementById('clearSyncBtn').addEventListener('click', () => {
+    if (!confirm('Clear sync configuration? Your local data will be preserved.')) return;
+    syncConfig = { token: null, gistId: null, lastSync: null };
+    saveSyncConfig();
+    updateSyncStatus('offline');
+    closeSyncModal();
+  });
+
   // Action buttons
   document.getElementById('saveBtn').addEventListener('click', () => {
     saveState();
     alert('Saved!');
+  });
+
+  document.getElementById('syncNowBtn').addEventListener('click', async () => {
+    if (!syncConfig.token) {
+      openSyncModal();
+      return;
+    }
+    await syncToGist();
   });
 
   document.getElementById('exportBtn').addEventListener('click', () => {
@@ -2203,9 +2710,24 @@ function initEvents() {
 }
 
 // ============ INIT ============
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load sync config first
+  loadSyncConfig();
+  
+  // Load local state
   loadState();
   state.currentDate = formatDate(new Date());
+  
+  // If we have sync configured, try to load from Gist
+  if (syncConfig.token && syncConfig.gistId) {
+    updateSyncStatus('syncing');
+    const loaded = await syncFromGist();
+    if (!loaded) {
+      // Fall back to local storage
+      loadState();
+    }
+  }
+  
   render();
   initEvents();
 });
