@@ -1106,7 +1106,7 @@ body {
         </div>
 
         <div class="macro-row carbs">
-          <span class="macro-label">Carbs</span>
+          <span class="macro-label">Net Carbs</span>
           <div class="macro-bar"><div class="fill" id="totCarbsBar"></div></div>
           <div class="macro-values">
             <span class="current" id="totCarbs">0</span>g
@@ -1147,8 +1147,8 @@ body {
             <div class="label">Protein</div>
           </div>
           <div class="target-item">
-            <div class="value" id="tgC">150</div>
-            <div class="label">Carbs</div>
+            <div class="value" id="tgC">118</div>
+            <div class="label">Net Carbs</div>
           </div>
           <div class="target-item">
             <div class="value" id="tgF">55</div>
@@ -1459,8 +1459,8 @@ const REFERENCE = {
   quick: `
 <h4>Daily Targets</h4>
 <div class="highlight">
-<strong>Training Day:</strong> 2,100 kcal • 180g protein • 150g carbs • 55g fat • 32g fiber<br>
-<strong>Rest Day:</strong> 1,900 kcal • 180g protein • 120g carbs • 55g fat • 32g fiber<br>
+<strong>Training Day:</strong> 2,100 kcal • 180g protein • 118g net carbs • 55g fat • 32g fiber<br>
+<strong>Rest Day:</strong> 1,900 kcal • 180g protein • 88g net carbs • 55g fat • 32g fiber<br>
 <strong>Water:</strong> 80-100 oz • <strong>Steps:</strong> 8,000+
 </div>
 
@@ -2098,14 +2098,14 @@ function renderTotals() {
   };
 
   updateMacro('Protein', totals.P, targets.P);
-  updateMacro('Carbs', totals.C, targets.C);
+  updateMacro('Carbs', totals.C - totals.Fb, targets.C - targets.Fb);  // Net carbs
   updateMacro('Fat', totals.F, targets.F);
   updateMacro('Fiber', totals.Fb, targets.Fb);
   updateMacro('Cal', totals.K, targets.K);
 
   // Update targets display
   document.getElementById('tgP').textContent = targets.P;
-  document.getElementById('tgC').textContent = targets.C;
+  document.getElementById('tgC').textContent = targets.C - targets.Fb;  // Net carbs
   document.getElementById('tgF').textContent = targets.F;
   document.getElementById('tgK').textContent = targets.K;
 
