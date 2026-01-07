@@ -2098,7 +2098,10 @@ function renderTotals() {
   };
 
   updateMacro('Protein', totals.P, targets.P);
-  updateMacro('Carbs', totals.C - totals.Fb, targets.C - targets.Fb);  // Net carbs
+  // Net carbs: round each value first, then subtract (so math matches displayed values)
+  const roundedCarbs = Math.round(totals.C);
+  const roundedFiber = Math.round(totals.Fb);
+  updateMacro('Carbs', roundedCarbs - roundedFiber, targets.C - targets.Fb);
   updateMacro('Fat', totals.F, targets.F);
   updateMacro('Fiber', totals.Fb, targets.Fb);
   updateMacro('Cal', totals.K, targets.K);
